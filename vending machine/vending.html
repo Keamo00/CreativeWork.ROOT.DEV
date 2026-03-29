@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vending Machine</title>
+    <link rel="stylesheet" href="vending.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="vending-container atomic-component">
+        <div class="glass-front">
+            <div id="product-slot" class="item" style="font-size: 4rem;">🥤</div>
+        </div>
+
+        <div class="control-panel atomic-component">
+            <div id="display" class="led-screen">INSERT COINS</div>
+            
+            <div class="keypad">
+                <button onclick="VM.pressKey('A')">A</button>
+                <button onclick="VM.pressKey('B')">B</button>
+                <br>
+                <button onclick="VM.pressKey('1')">1</button>
+                <button onclick="VM.pressKey('2')">2</button>
+            </div>
+
+            <div class="payment-area">
+                <button onclick="VM.insertCoin(10)">Insert R10</button>
+                <p>Wallet: <span id="balance-readout">R0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP for animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="machine.js"></script>
+</body>
+</html>
