@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - CampusCoin</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+                <path fill="#1565c0" d="M128 704v128c0 70.692 57.308 128 128 128h608c17.728 0 32-14.272 32-32V704z"/>
+                <path fill="#ffe082" d="M704 704v192h128V704z"/>
+                <path fill="#fff8e1" d="M192 704v96c0 53.184 42.816 96 96 96h544a96 96 0 0 1-96-96 96 96 0 0 1 96-96z"/>
+                <path fill="#ff1744" d="M320 832h192v192l-96-96-96 96z"/>
+                <path fill="#2196f3" d="M256 64c-70.692 0-128 57.308-128 128v640c0 11.088 1.557 21.787 4.207 32.047C146.767 807.565 197.672 768.07 256 768h608c17.728 0 32-14.272 32-32V96c0-17.728-14.272-32-32-32z"/>
+                <path fill="#e3f2fd" d="M384 192c-70.692 0-128 57.308-128 128 .171 67.295 52.422 122.965 119.57 127.396L256 640h80l156.748-252.488h-.146A128 128 0 0 0 512 320c0-70.692-57.308-128-128-128m320 0c-70.692 0-128 57.308-128 128 .171 67.295 52.422 122.965 119.57 127.396L576 640h80l156.748-252.488h-.146A128 128 0 0 0 832 320c0-70.692-57.308-128-128-128"/>
+            </svg>
+            <span class="brand-name">CampusCoin</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="transact.html">Transact & Earn</a></li>
+                <li><a href="loyalty.html">Loyalty Rewards</a></li>
+                <li><a href="contacts.html">Contact Us</a></li>
+                <li><button id="dark-mode-btn" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>📞 Get in Touch</h2>
+            <p>We're here to help! Reach out through your preferred channel. Our team responds promptly to all inquiries.</p>
+
+            <div class="cards">
+                <!-- WhatsApp -->
+                <div class="card" style="cursor: default;">
+                    <div class="card-icon">💬</div>
+                    <h3>WhatsApp</h3>
+                    <p>Chat with us directly for quick support and answers.</p>
+                    <p style="font-weight: 600; color: #5758BB; margin-top: 1rem;">+27 67 XXXX XXXX</p>
+                    <a href="https://wa.me/27671234567?text=Hi%20CampusCoin%2C%20I%20have%20a%20question%20about%20my%20account" class="btn" style="display: inline-block; margin-top: 1rem; background: #25D366;" target="_blank">Open WhatsApp</a>
+                </div>
+
+                <!-- Instagram -->
+                <div class="card" style="cursor: default;">
+                    <div class="card-icon">📸</div>
+                    <h3>Instagram</h3>
+                    <p>Follow us for updates, tips, and student success stories.</p>
+                    <p style="font-weight: 600; color: #5758BB; margin-top: 1rem;">@campuscoin_sa</p>
+                    <a href="https://instagram.com/campuscoin_sa" class="btn" style="display: inline-block; margin-top: 1rem; background: #E1306C;" target="_blank">Follow Us</a>
+                </div>
+
+                <!-- Phone -->
+                <div class="card" style="cursor: default;">
+                    <div class="card-icon">☎️</div>
+                    <h3>Phone Call</h3>
+                    <p>Speak directly with our customer support team.</p>
+                    <p style="font-weight: 600; color: #5758BB; margin-top: 1rem;">+27 10 XXXX XXXX</p>
+                    <a href="tel:+27101234567" class="btn" style="display: inline-block; margin-top: 1rem; background: #006e6d;">Call Now</a>
+                </div>
+
+                <!-- Email -->
+                <div class="card" style="cursor: default;">
+                    <div class="card-icon">✉️</div>
+                    <h3>Email</h3>
+                    <p>Send us a detailed message or inquiry.</p>
+                    <p style="font-weight: 600; color: #5758BB; margin-top: 1rem;">support@campuscoin.co.za</p>
+                    <a href="mailto:support@campuscoin.co.za" class="btn" style="display: inline-block; margin-top: 1rem;">Send Email</a>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 2rem; border-radius: 12px; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); margin-top: 3rem;">
+                <h3 style="color: var(--color-pompadour); margin-top: 0;">Response Times</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(32, 186, 88, 0.1)); border-radius: 8px; border-left: 4px solid #25D366;">
+                        <h4 style="color: #006e6d; margin-top: 0;">💬 WhatsApp</h4>
+                        <p style="margin: 0.5rem 0 0 0; color: var(--color-text-light);">Typically within 30 minutes during business hours</p>
+                    </div>
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(225, 48, 108, 0.1), rgba(193, 53, 132, 0.1)); border-radius: 8px; border-left: 4px solid #E1306C;">
+                        <h4 style="color: #E1306C; margin-top: 0;">📧 Email</h4>
+                        <p style="margin: 0.5rem 0 0 0; color: var(--color-text-light);">Within 24 hours</p>
+                    </div>
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(0, 110, 109, 0.1), rgba(99, 205, 218, 0.1)); border-radius: 8px; border-left: 4px solid #006e6d;">
+                        <h4 style="color: #006e6d; margin-top: 0;">☎️ Phone</h4>
+                        <p style="margin: 0.5rem 0 0 0; color: var(--color-text-light);">Answered during business hours</p>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--color-pompadour); margin-top: 2rem;">Business Hours</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                    <div>
+                        <p style="font-weight: 600; color: var(--color-pompadour); margin: 0 0 0.5rem 0;">📅 Weekdays</p>
+                        <p style="color: var(--color-text-light); margin: 0;">Monday - Friday: 08:00 - 18:00 SAST</p>
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: var(--color-pompadour); margin: 0 0 0.5rem 0;">📅 Saturday</p>
+                        <p style="color: var(--color-text-light); margin: 0;">09:00 - 13:00 SAST</p>
+                    </div>
+                    <div>
+                        <p style="font-weight: 600; color: var(--color-pompadour); margin: 0 0 0.5rem 0;">📅 Holidays</p>
+                        <p style="color: var(--color-text-light); margin: 0;">Email available anytime</p>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--color-pompadour); margin-top: 2rem;">How We Can Help</h3>
+                <ul style="color: var(--color-text-light); line-height: 1.8; margin-top: 1rem;">
+                    <li>Account access and login issues</li>
+                    <li>Reward redemption and balance queries</li>
+                    <li>Transaction support and refunds</li>
+                    <li>Feature requests and feedback</li>
+                    <li>General questions about CampusCoin</li>
+                    <li>Student partnerships and collaborations</li>
+                </ul>
+            </div>
+
+            <div class="info-box" style="margin-top: 2rem;">
+                <h3 style="margin-top: 0;">⚡ Quick Support Tips</h3>
+                <p><strong>For fastest response:</strong> Use WhatsApp during business hours (instant replies)</p>
+                <p><strong>Have details ready:</strong> Account number, transaction ID (if applicable), and a clear description of your issue</p>
+                <p><strong>We value feedback:</strong> Your suggestions help us improve CampusCoin. Don't hesitate to reach out!</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 CampusCoin. All rights reserved.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

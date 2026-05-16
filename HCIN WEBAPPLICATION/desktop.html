@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusCoin - Virtual Desktop</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8a5c2 0%, #63cdda 50%, #5758BB 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Desktop Container */
+        .desktop {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(87, 88, 187, 0.95);
+            border-top: 2px solid #5758BB;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .taskbar-icon {
+            cursor: pointer;
+            font-size: 28px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+        }
+
+        .taskbar-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1);
+        }
+
+        .taskbar-icon.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #f8a5c2;
+        }
+
+        /* Window Styles */
+        .window {
+            position: absolute;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            min-width: 350px;
+            z-index: 50;
+            cursor: move;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .window.active {
+            border-color: #6A4C93;
+            box-shadow: 0 12px 32px rgba(106, 76, 147, 0.3);
+        }
+
+        .window-header {
+            background: linear-gradient(90deg, #5758BB, #6b6fcf);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            user-select: none;
+            cursor: move;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-btn {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .window-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .close-btn {
+            background: #f8a5c2 !important;
+        }
+
+        .close-btn:hover {
+            background: #ff7fa8 !important;
+        }
+
+        .window-content {
+            padding: 20px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .window.hidden {
+            display: none;
+        }
+
+        /* ==================== ANIMATIONS ==================== */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes liquidFill {
+            0% { width: 0%; }
+            100% { width: var(--fill-width); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #6A4C93;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .checkmark {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            color: #4CAF50;
+            animation: checkmark 0.5s ease-out;
+        }
+
+        .input-error {
+            border-color: #ff7f7f !important;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .milestone-pulse {
+            animation: pulse 0.8s ease-in-out;
+        }
+
+        .liquid-fill {
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #6A4C93;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1001;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* Form Elements */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #5758BB;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #5758BB;
+            box-shadow: 0 0 8px rgba(87, 88, 187, 0.2);
+        }
+
+        .high-contrast-input {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #5758BB, #6b6fcf);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(87, 88, 187, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #63cdda;
+            margin-top: 8px;
+        }
+
+        /* Display Values */
+        .reward-display {
+            background: linear-gradient(135deg, #f8a5c2, #ff9ec9);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(248, 165, 194, 0.3);
+        }
+
+        .reward-amount {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* Loyalty Bar */
+        .loyalty-container {
+            padding: 20px 0;
+        }
+
+        .loyalty-bar-bg {
+            width: 100%;
+            height: 28px;
+            background-color: #e0e0e0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 2px solid #5758BB;
+        }
+
+        .loyalty-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #006e6d, #63cdda);
+            transition: width 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .milestones {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            color: #5758BB;
+            font-weight: 600;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f0f0;
+            border-left: 4px solid #5758BB;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Toast Notification */
+        .reward-toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #f8a5c2, #ff9ec9);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(248, 165, 194, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 999;
+            animation: slideIn 0.5s ease-out;
+            max-width: 320px;
+        }
+
+        .toast-icon {
+            font-size: 32px;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        .toast-message {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toast-message b {
+            font-size: 16px;
+        }
+
+        .toast-message span {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Transaction Options */
+        .transaction-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .transaction-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .transaction-item:hover {
+            border-color: #5758BB;
+            background: #f0f0ff;
+            transform: translateY(-2px);
+        }
+
+        .transaction-item.selected {
+            border-color: #5758BB;
+            background: linear-gradient(135deg, #f0f0ff, #e8e8ff);
+        }
+
+        .transaction-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .transaction-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .transaction-amount {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Notepad Style */
+        .notepad-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .notepad-content h3 {
+            color: #5758BB;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+
+        .notepad-content p {
+            margin-bottom: 12px;
+        }
+
+        .notepad-content ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .notepad-content li {
+            margin-bottom: 6px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .window {
+                min-width: 90vw !important;
+            }
+            .transaction-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop">
+        <!-- BACK BUTTON -->
+        <a href="index.html" style="position: fixed; top: 20px; left: 20px; z-index: 101; background: linear-gradient(135deg, #5758BB, #6b6fcf); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(87, 88, 187, 0.3); transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(87, 88, 187, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(87, 88, 187, 0.3)'">
+            ← Home
+        </a>
+
+        <!-- TASKBAR -->
+        <div class="taskbar">
+            <div class="taskbar-icon active" onclick="toggleWindow('calculator-window')" title="Budget Calculator">
+                🧮 Calculator
+            </div>
+            <div class="taskbar-icon" onclick="toggleWindow('transact-window')" title="Transact & Earn">
+                💸 Pay & Earn
+            </div>
+            <div class="taskbar-icon" onclick="toggleWindow('loyalty-window')" title="Loyalty Rewards">
+                🏆 Rewards
+            </div>
+            <div class="taskbar-icon" onclick="toggleWindow('about-window')" title="About CampusCoin">
+                📄 About
+            </div>
+        </div>
+
+        <!-- CALCULATOR WINDOW -->
+        <div class="window" id="calculator-window" style="top: 60px; left: 40px; width: 380px;">
+            <div class="window-header">
+                <span>🧮 Budget & Rewards Calculator</span>
+                <div class="window-controls">
+                    <button class="window-btn" onclick="minimizeWindow('calculator-window')">−</button>
+                    <button class="window-btn close-btn" onclick="toggleWindow('calculator-window')">✕</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <p style="margin-bottom: 15px; color: #666;">Track your spending and unlock grocery rewards every month.</p>
+
+                <div class="input-group">
+                    <label for="data-spend">Data Spending (R)</label>
+                    <input type="number" id="data-spend" class="high-contrast-input" placeholder="0.00" min="0" step="0.01">
+                </div>
+
+                <div class="input-group">
+                    <label for="electricity-spend">Electricity (R)</label>
+                    <input type="number" id="electricity-spend" class="high-contrast-input" placeholder="0.00" min="0" step="0.01">
+                </div>
+
+                <div class="input-group">
+                    <label for="food-spend">Food & Groceries (R)</label>
+                    <input type="number" id="food-spend" class="high-contrast-input" placeholder="0.00" min="0" step="0.01">
+                </div>
+
+                <button class="btn" onclick="calculateRewards()">Calculate Rewards</button>
+
+                <div class="reward-display" id="reward-display" style="display: none;">
+                    <div style="font-size: 14px; margin-bottom: 8px;">Monthly Savings</div>
+                    <div class="reward-amount" id="reward-amount">R0.00</div>
+                    <div style="font-size: 12px; opacity: 0.9;">10% back in grocery rewards</div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #63cdda;">
+                    <p style="font-size: 13px; color: #333;"><strong>💡 Tip:</strong> Smart spending now = grocery savings later! Every R100 gets you R10 back.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSACT & EARN WINDOW -->
+        <div class="window hidden" id="transact-window" style="top: 100px; left: 450px; width: 380px;">
+            <div class="window-header">
+                <span>💸 Transact & Earn</span>
+                <div class="window-controls">
+                    <button class="window-btn" onclick="minimizeWindow('transact-window')">−</button>
+                    <button class="window-btn close-btn" onclick="toggleWindow('transact-window')">✕</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <p style="margin-bottom: 20px; color: #666;">Pay for essentials in 3 clicks. Earn rewards instantly!</p>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #5758BB;">Select Service</label>
+                    <div class="transaction-grid" id="transaction-grid">
+                        <div class="transaction-item" onclick="selectTransaction('airtime', this)">
+                            <div class="transaction-icon">📱</div>
+                            <div class="transaction-label">Airtime</div>
+                            <div class="transaction-amount">Any amount</div>
+                        </div>
+                        <div class="transaction-item" onclick="selectTransaction('data', this)">
+                            <div class="transaction-icon">📡</div>
+                            <div class="transaction-label">Data Bundle</div>
+                            <div class="transaction-amount">From R5</div>
+                        </div>
+                        <div class="transaction-item" onclick="selectTransaction('electricity', this)">
+                            <div class="transaction-icon">⚡</div>
+                            <div class="transaction-label">Electricity</div>
+                            <div class="transaction-amount">Token purchase</div>
+                        </div>
+                        <div class="transaction-item" onclick="selectTransaction('bills', this)">
+                            <div class="transaction-icon">📋</div>
+                            <div class="transaction-label">Bill Payment</div>
+                            <div class="transaction-amount">Any bill</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="transaction-amount">Amount (R)</label>
+                    <input type="number" id="transaction-amount" class="high-contrast-input" placeholder="0.00" min="0" step="0.01">
+                </div>
+
+                <button class="btn" onclick="completeTransaction()">Complete Transaction</button>
+
+                <div style="margin-top: 15px; text-align: center; font-size: 13px; color: #999;">
+                    Demo mode: Simulated transactions
+                </div>
+            </div>
+        </div>
+
+        <!-- LOYALTY WINDOW -->
+        <div class="window hidden" id="loyalty-window" style="top: 140px; left: 860px; width: 380px;">
+            <div class="window-header">
+                <span>🏆 12-Month Loyalty Track</span>
+                <div class="window-controls">
+                    <button class="window-btn" onclick="minimizeWindow('loyalty-window')">−</button>
+                    <button class="window-btn close-btn" onclick="toggleWindow('loyalty-window')">✕</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <p style="margin-bottom: 15px; color: #666;">Consistent smart spending unlocks your <strong>R6,000 grocery reward.</strong></p>
+
+                <div class="loyalty-container">
+                    <div class="loyalty-bar-bg">
+                        <div id="loyalty-fill" class="loyalty-bar-fill" style="width: 8.33%;"></div>
+                    </div>
+                    <div class="milestones">
+                        <span>Month 1</span>
+                        <span>Month 6</span>
+                        <span>Month 12 (Goal!)</span>
+                    </div>
+                </div>
+
+                <div class="status-message" id="status-message">
+                    📌 Month 1: Keep spending smart to unlock rewards!
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #5758BB; margin-bottom: 10px;">Your Progress</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #666;">Current Month:</span>
+                        <span style="font-weight: bold; color: #5758BB;" id="current-month">1</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #666;">Earned Rewards:</span>
+                        <span style="font-weight: bold; color: #f8a5c2;" id="earned-rewards">R0.00</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="advanceLoyaltyMonth()">Simulate Next Month</button>
+            </div>
+        </div>
+
+        <!-- ABOUT WINDOW -->
+        <div class="window hidden" id="about-window" style="top: 180px; left: 100px; width: 420px;">
+            <div class="window-header">
+                <span>📄 About CampusCoin</span>
+                <div class="window-controls">
+                    <button class="window-btn" onclick="minimizeWindow('about-window')">−</button>
+                    <button class="window-btn close-btn" onclick="toggleWindow('about-window')">✕</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <div class="notepad-content">
+                    <h3>Welcome to CampusCoin!</h3>
+                    <p>CampusCoin transforms how South African students stretch their monthly budgets. We gamify smart spending to help you save more while earning grocery rewards.</p>
+
+                    <h3>How It Works</h3>
+                    <ul>
+                        <li><strong>Track Spending:</strong> Log your essential expenses (data, electricity, food)</li>
+                        <li><strong>Earn Instantly:</strong> Get 10% back in grocery rewards on every transaction</li>
+                        <li><strong>Build Loyalty:</strong> Reach 12 months of consistent spending to unlock R6,000 grocery vouchers</li>
+                        <li><strong>Save Smart:</strong> Use rewards to offset future expenses and stretch your budget</li>
+                    </ul>
+
+                    <h3>Why CampusCoin?</h3>
+                    <p>Student life means tight budgets. CampusCoin rewards responsible spending habits, helping you build financial discipline while immediately reducing expenses through grocery savings.</p>
+
+                    <h3>The Community</h3>
+                    <p>Join thousands of South African students using CampusCoin to manage their finances smarter. Every transaction contributes to your journey toward financial freedom.</p>
+
+                    <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                        © 2026 CampusCoin. Empowering student wallets.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTACTS WINDOW -->
+        <div class="window hidden" id="contacts-window" style="top: 220px; left: 1100px; width: 380px;">
+            <div class="window-header">
+                <span>📞 Contact Us</span>
+                <div class="window-controls">
+                    <button class="window-btn" onclick="minimizeWindow('contacts-window')">−</button>
+                    <button class="window-btn close-btn" onclick="toggleWindow('contacts-window')">✕</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <p style="margin-bottom: 15px; color: #666;">Multiple ways to reach our support team.</p>
+
+                <h3 style="color: #5758BB; margin: 15px 0 10px 0; font-size: 1rem;">WhatsApp</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">Chat instantly for quick support</p>
+                <a href="https://wa.me/27671234567?text=Hi%20CampusCoin%2C%20I%20have%20a%20question" class="btn" style="display: block; text-align: center; background: #25D366;" target="_blank">💬 Open WhatsApp</a>
+
+                <h3 style="color: #5758BB; margin: 15px 0 10px 0; font-size: 1rem;">Instagram</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">Follow for updates & tips</p>
+                <a href="https://instagram.com/campuscoin_sa" class="btn" style="display: block; text-align: center; background: #E1306C;" target="_blank">📸 Follow Us</a>
+
+                <h3 style="color: #5758BB; margin: 15px 0 10px 0; font-size: 1rem;">Phone</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">+27 67 XXXX XXXX</p>
+                <a href="tel:+27671234567" class="btn" style="display: block; text-align: center; background: #006e6d;">☎️ Call Now</a>
+
+                <h3 style="color: #5758BB; margin: 15px 0 10px 0; font-size: 1rem;">Email</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">support@campuscoin.co.za</p>
+                <a href="mailto:support@campuscoin.co.za" class="btn" style="display: block; text-align: center; background: #f8a5c2;">✉️ Send Email</a>
+
+                <div style="margin-top: 15px; padding: 12px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #63cdda;">
+                    <p style="font-size: 12px; color: #333; margin: 0;"><strong>💡 Tip:</strong> WhatsApp is fastest during business hours (Mon-Fri, 08:00-18:00 SAST)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA MANAGEMENT ====================
+        let appState = {
+            currentMonth: 1,
+            totalEarnings: 0,
+            monthlySpending: [],
+            selectedTransaction: null
+        };
+
+        // Load from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('campuscoinState');
+            if (saved) {
+                appState = JSON.parse(saved);
+                updateLoyaltyDisplay();
+            }
+        }
+
+        // Save to localStorage
+        function saveState() {
+            localStorage.setItem('campuscoinState', JSON.stringify(appState));
+        }
+
+        // ==================== WINDOW MANAGEMENT ====================
+        function toggleWindow(windowId) {
+            const window = document.getElementById(windowId);
+            
+            // Animate window appearance
+            if (window.classList.contains('hidden')) {
+                window.classList.remove('hidden');
+                gsap.fromTo(window, 
+                    { scale: 0.8, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.3, ease: "back.out" }
+                );
+            } else {
+                gsap.to(window, { 
+                    scale: 0.8, 
+                    opacity: 0, 
+                    duration: 0.2, 
+                    ease: "back.in",
+                    onComplete: () => window.classList.add('hidden')
+                });
+            }
+
+            // Update taskbar active state
+            const icons = document.querySelectorAll('.taskbar-icon');
+            icons.forEach(icon => {
+                const targetId = icon.textContent.includes('Calculator') ? 'calculator-window' :
+                                icon.textContent.includes('Pay') ? 'transact-window' :
+                                icon.textContent.includes('Rewards') ? 'loyalty-window' :
+                                icon.textContent.includes('About') ? 'about-window' :
+                                icon.textContent.includes('Contact') ? 'contacts-window' : null;
+
+                if (targetId === windowId && !window.classList.contains('hidden')) {
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                }
+            });
+
+            // Bring to front and add active state
+            setWindowActive(windowId);
+        }
+
+        function setWindowActive(windowId) {
+            const window = document.getElementById(windowId);
+            document.querySelectorAll('.window').forEach(w => w.classList.remove('active'));
+            window.classList.add('active');
+            window.style.zIndex = 50 + Math.random() * 100;
+        }
+
+        function minimizeWindow(windowId) {
+            toggleWindow(windowId);
+        }
+
+        // Make windows draggable with GSAP physics
+        function makeWindowDraggable(windowId) {
+            const window = document.getElementById(windowId);
+            const header = window.querySelector('.window-header');
+            
+            // Register GSAP plugin
+            gsap.registerPlugin(Draggable);
+            
+            Draggable.create(window, {
+                trigger: header,
+                type: "x,y",
+                edgeResistance: 0.65,
+                bounds: document.querySelector('.desktop'),
+                onPress: function() {
+                    setWindowActive(windowId);
+                },
+                inertia: true,
+                throwProps: true,
+                onThrowUpdate: function(self) {
+                    // Spring deceleration effect
+                    gsap.to(this.target, { 
+                        duration: 0.1, 
+                        ease: "power2.out"
+                    });
+                }
+            });
+        }
+
+        /* ==================== ANIMATION HELPERS ==================== */
+        function countUp(element, targetValue, duration = 1) {
+            let currentValue = 0;
+            gsap.to(
+                { value: currentValue },
+                {
+                    value: targetValue,
+                    duration: duration,
+                    ease: "power2.out",
+                    onUpdate: function() {
+                        element.textContent = `R${this.targets()[0].value.toFixed(2)}`;
+                    }
+                }
+            );
+        }
+
+        function showLoadingSpinner(button) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span> Processing...';
+        }
+
+        function showCheckmark(button, originalText) {
+            button.innerHTML = '<span class="checkmark">✓</span> Success!';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 1500);
+        }
+
+        function animatePulseMilestone(element) {
+            gsap.to(element, {
+                scale: 1.2,
+                duration: 0.4,
+                ease: "elastic.out",
+                yoyo: true,
+                repeat: 1
+            });
+        }
+
+        function shakeInput(input, errorMessage = '') {
+            gsap.to(input, {
+                x: 10,
+                duration: 0.05,
+                repeat: 3,
+                yoyo: true,
+                ease: "power2.out",
+                onComplete: () => {
+                    input.classList.add('input-error');
+                }
+            });
+
+            if (errorMessage) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = errorMessage;
+                tooltip.style.left = input.offsetLeft + 'px';
+                tooltip.style.top = (input.offsetTop + input.offsetHeight + 5) + 'px';
+                input.parentElement.appendChild(tooltip);
+
+                setTimeout(() => {
+                    gsap.to(tooltip, { 
+                        opacity: 0, 
+                        duration: 0.3, 
+                        onComplete: () => tooltip.remove() 
+                    });
+                }, 2000);
+            }
+        }
+
+        function clearInputError(input) {
+            input.classList.remove('input-error');
+        }
+
+        function animateLiquidFill(progressBar, targetWidth, duration = 1.5) {
+            gsap.to(progressBar, {
+                '--fill-width': targetWidth + '%',
+                duration: duration,
+                ease: "power2.out"
+            });
+        }
+
+        function showTooltip(element, text) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = text;
+            document.body.appendChild(tooltip);
+
+            const rect = element.getBoundingClientRect();
+            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+
+            setTimeout(() => {
+                gsap.to(tooltip, { 
+                    opacity: 0, 
+                    duration: 0.3, 
+                    onComplete: () => tooltip.remove() 
+                });
+            }, 2500);
+        }
+
+        // ==================== CALCULATOR FUNCTIONS ====================
+        function calculateRewards() {
+            const dataInput = document.getElementById('data-spend');
+            const electricityInput = document.getElementById('electricity-spend');
+            const foodInput = document.getElementById('food-spend');
+            
+            const data = parseFloat(dataInput.value) || 0;
+            const electricity = parseFloat(electricityInput.value) || 0;
+            const food = parseFloat(foodInput.value) || 0;
+
+            // Validate inputs
+            if (data < 0 || electricity < 0 || food < 0) {
+                if (data < 0) shakeInput(dataInput, 'Invalid amount');
+                if (electricity < 0) shakeInput(electricityInput, 'Invalid amount');
+                if (food < 0) shakeInput(foodInput, 'Invalid amount');
+                return;
+            }
+
+            // Clear errors
+            [dataInput, electricityInput, foodInput].forEach(input => clearInputError(input));
+
+            const total = data + electricity + food;
+            const rewards = total * 0.10; // 10% back
+
+            const display = document.getElementById('reward-display');
+            const amount = document.getElementById('reward-amount');
+
+            if (total > 0) {
+                display.style.display = 'block';
+                
+                // Animate count-up
+                countUp(amount, rewards, 1);
+
+                // Pulse animation if milestone reached
+                if (rewards >= 60) { // Major milestone
+                    animatePulseMilestone(amount);
+                }
+
+                // Update app state
+                appState.totalEarnings += rewards;
+                saveState();
+
+                // Show toast
+                if (rewards > 0) {
+                    showRewardToast(rewards);
+                }
+            } else {
+                display.style.display = 'none';
+            }
+        }
+
+        // Input listeners for real-time count-up
+        function setupCalculatorListeners() {
+            ['data-spend', 'electricity-spend', 'food-spend'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('blur', () => {
+                        if (input.value) calculateRewards();
+                    });
+                }
+            });
+        }
+
+        // ==================== TRANSACTION FUNCTIONS ====================
+        function selectTransaction(type, element) {
+            document.querySelectorAll('.transaction-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            appState.selectedTransaction = type;
+        }
+
+        function completeTransaction() {
+            const amountInput = document.getElementById('transaction-amount');
+            const amount = parseFloat(amountInput.value) || 0;
+            const btn = event.target;
+            const originalText = btn.textContent;
+
+            if (!appState.selectedTransaction) {
+                shakeInput(amountInput, 'Select a service');
+                return;
+            }
+
+            if (amount <= 0) {
+                shakeInput(amountInput, 'Enter valid amount');
+                return;
+            }
+
+            // Validate amount is not too large
+            if (amount > 10000) {
+                shakeInput(amountInput, 'Maximum R10,000 per transaction');
+                return;
+            }
+
+            // Clear errors
+            clearInputError(amountInput);
+
+            // Show loading spinner
+            showLoadingSpinner(btn);
+
+            // Simulate processing with GSAP timeline
+            gsap.timeline()
+                .to({}, { duration: 1 }) // 1 second loading
+                .add(() => {
+                    const reward = amount * 0.10;
+                    appState.totalEarnings += reward;
+                    saveState();
+
+                    // Show checkmark
+                    showCheckmark(btn, originalText);
+
+                    // Clear form
+                    amountInput.value = '';
+                    document.querySelectorAll('.transaction-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+
+                    // Show success toast
+                    showRewardToast(reward);
+                });
+        }
+
+        // ==================== LOYALTY FUNCTIONS ====================
+        function advanceLoyaltyMonth() {
+            if (appState.currentMonth < 12) {
+                appState.currentMonth++;
+                saveState();
+                updateLoyaltyDisplay();
+                showRewardToast(500); // Bonus reward for completing month
+            } else {
+                alert('🎉 Congratulations! You\'ve reached the 12-month loyalty goal! Claim your R6,000 grocery reward!');
+            }
+        }
+
+        function updateLoyaltyDisplay() {
+            const progress = (appState.currentMonth / 12) * 100;
+            const loyaltyFill = document.getElementById('loyalty-fill');
+            
+            // Animate liquid fill
+            gsap.to(loyaltyFill, {
+                width: progress + '%',
+                duration: 1.5,
+                ease: "power2.out"
+            });
+            
+            loyaltyFill.textContent = appState.currentMonth + '/12';
+            
+            // Animate text changes
+            gsap.to('#current-month', { duration: 0.3, innerHTML: appState.currentMonth });
+            gsap.to('#earned-rewards', { 
+                duration: 0.3, 
+                innerHTML: 'R' + appState.totalEarnings.toFixed(2)
+            });
+
+            // Update status message with animation
+            let message = '';
+            if (appState.currentMonth === 1) {
+                message = '📌 Month 1: Keep spending smart to unlock rewards!';
+            } else if (appState.currentMonth < 6) {
+                message = `🌱 Month ${appState.currentMonth}: You're on the path to success!`;
+            } else if (appState.currentMonth < 12) {
+                message = `⭐ Month ${appState.currentMonth}: Almost there! Keep going!`;
+            } else {
+                message = '🏆 Month 12: You\'ve unlocked the R6,000 grocery reward!';
+            }
+            
+            const statusMsg = document.getElementById('status-message');
+            gsap.to(statusMsg, { 
+                duration: 0.3,
+                onUpdate: () => {
+                    statusMsg.textContent = message;
+                }
+            });
+
+            // Add hover tooltips to milestones
+            setupMilestoneTooltips();
+        }
+
+        function setupMilestoneTooltips() {
+            const milestones = document.querySelectorAll('.milestones span');
+            milestones.forEach((milestone, index) => {
+                milestone.style.cursor = 'help';
+                milestone.addEventListener('mouseenter', () => {
+                    const monthNum = (index + 1) * 6;
+                    const tooltipText = monthNum === 6 ? '💰 R600 progress!' : 
+                                       monthNum === 12 ? '🏆 Unlock R6,000!' : 
+                                       'Start your journey!';
+                    showTooltip(milestone, tooltipText);
+                });
+            });
+        }
+
+        // ==================== TOAST NOTIFICATIONS ====================
+        function showRewardToast(amount) {
+            const toast = document.createElement('div');
+            toast.className = 'reward-toast';
+
+            toast.innerHTML = `
+                <div class="toast-icon">😊</div>
+                <div class="toast-message">
+                    <b>Reward Earned!</b>
+                    <span>R${amount.toFixed(2)} added to Grocery eWallet</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.5s ease-in forwards';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // ==================== INITIALIZATION ====================
+        // Check for prefers-reduced-motion
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (prefersReducedMotion) {
+            gsap.globalTimeline.timeScale(10); // Speed up animations to instant
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            setupCalculatorListeners();
+
+            // Make all windows draggable
+            document.querySelectorAll('.window').forEach(window => {
+                makeWindowDraggable(window.id);
+                
+                // Click to set active state
+                window.addEventListener('mousedown', () => {
+                    setWindowActive(window.id);
+                });
+            });
+
+            // Add real-time calculation
+            const inputs = document.querySelectorAll('#data-spend, #electricity-spend, #food-spend');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateRewards);
+                input.addEventListener('focus', () => clearInputError(input));
+            });
+
+            // Setup milestone tooltips
+            setupMilestoneTooltips();
+
+            // Add transaction amount validation
+            const transactionAmount = document.getElementById('transaction-amount');
+            if (transactionAmount) {
+                transactionAmount.addEventListener('blur', () => {
+                    const amount = parseFloat(transactionAmount.value);
+                    if (amount > 10000) {
+                        shakeInput(transactionAmount, 'Max R10,000');
+                    }
+                });
+            }
+        });
+
+        // Keyboard accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close visible window
+                document.querySelectorAll('.window:not(.hidden)').forEach(window => {
+                    if (Math.random() < 1) { // Close first visible
+                        window.classList.add('hidden');
+                        return;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

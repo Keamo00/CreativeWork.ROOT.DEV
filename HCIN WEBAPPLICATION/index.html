@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusCoin</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark-mode');
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <!-- svg logo -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+                <path fill="#1565c0" d="M128 704v128c0 70.692 57.308 128 128 128h608c17.728 0 32-14.272 32-32V704z" />
+                <path fill="#ffe082" d="M704 704v192h128V704z" />
+                <path fill="#fff8e1"
+                    d="M192 704v96c0 53.184 42.816 96 96 96h544a96 96 0 0 1-96-96 96 96 0 0 1 96-96z" />
+                <path fill="#ff1744" d="M320 832h192v192l-96-96-96 96z" />
+                <path fill="#2196f3"
+                    d="M256 64c-70.692 0-128 57.308-128 128v640c0 11.088 1.557 21.787 4.207 32.047C146.767 807.565 197.672 768.07 256 768h608c17.728 0 32-14.272 32-32V96c0-17.728-14.272-32-32-32z" />
+                <path fill="#e3f2fd"
+                    d="M384 192c-70.692 0-128 57.308-128 128 .171 67.295 52.422 122.965 119.57 127.396L256 640h80l156.748-252.488h-.146A128 128 0 0 0 512 320c0-70.692-57.308-128-128-128m320 0c-70.692 0-128 57.308-128 128 .171 67.295 52.422 122.965 119.57 127.396L576 640h80l156.748-252.488h-.146A128 128 0 0 0 832 320c0-70.692-57.308-128-128-128" />
+            </svg>
+            <span class="brand-name">CampusCoin</span>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="calculator.html">Calculator</a></li>
+                <li><a href="transact.html">Transact & Earn</a></li>
+                <li><a href="loyalty.html">Loyalty Rewards</a></li>
+                <li><a href="contacts.html">Contact Us</a></li>
+                <li><button id="dark-mode-btn" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Name Input Modal -->
+    <div id="name-modal" class="name-modal">
+        <div class="name-modal-content">
+            <h2>Welcome to CampusCoin! 🎉</h2>
+            <p>Let's personalize your experience. What's your name?</p>
+            <input type="text" id="user-name-input" class="name-input" placeholder="Enter your name" maxlength="50">
+            <button onclick="saveName()" class="name-submit-btn">Get Started</button>
+        </div>
+    </div>
+
+    <main>
+        <section id="welcome" class="dashboard">
+            <h2 id="welcome-greeting">Welcome to CampusCoin</h2>
+            <p>Transform your student budget into financial wins. Smart spending, real rewards.</p>
+            <div class="cards">
+                <a href="desktop.html" class="card">
+                    <div class="card-icon">🖥️</div>
+                    <h3>Virtual Desktop</h3>
+                    <p>Multi-window interface. Drag, drop, earn!</p>
+                </a>
+                <a href="calculator.html" class="card">
+                    <div class="card-icon">🧮</div>
+                    <h3>Budget Calculator</h3>
+                    <p>Estimate rewards based on spending.</p>
+                </a>
+                <a href="transact.html" class="card">
+                    <div class="card-icon">💸</div>
+                    <h3>Transact & Earn</h3>
+                    <p>Pay essentials and collect grocery vouchers.</p>
+                </a>
+                <a href="loyalty.html" class="card">
+                    <div class="card-icon">🏆</div>
+                    <h3>Loyalty Rewards</h3>
+                    <p>Track your 12-month reward journey.</p>
+                </a>
+                <a href="contacts.html" class="card">
+                    <div class="card-icon">📞</div>
+                    <h3>Contact Us</h3>
+                    <p>WhatsApp, Instagram, phone & email support.</p>
+                </a>
+            </div>
+        </section>
+
+        <section id="interactive" class="dashboard">
+            <h2>How CampusCoin Works</h2>
+            <div class="info-box" style="max-width: 600px; margin: 2rem auto;">
+                <h3 style="margin-top: 0;">3 Simple Steps to Grocery Rewards</h3>
+                <p><strong>1. Track Your Spending</strong> – Log your essential expenses (data, electricity, food)</p>
+                <p><strong>2. Earn Instantly</strong> – Get 10% back in grocery rewards on every transaction</p>
+                <p><strong>3. Build Loyalty</strong> – Reach 12 months of consistent spending to unlock R6,000 in
+                    grocery vouchers</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 CampusCoin. All rights reserved.</p>
+        </footer>
+
+        <script src="app.js"></script>
+</body>
+
+</html>
